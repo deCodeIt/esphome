@@ -71,9 +71,9 @@ static inline void rp2040_pio_led_strip_driver_{id}_init(PIO pio, uint sm, uint 
     sm_config_set_out_shift(&c, false, true, 8);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
 
-    // target frequency is 8MHz
+    // target frequency is 57.5MHz
     long clk = clock_get_hz(clk_sys);
-    long target_freq = 8000000;
+    long target_freq = 57500000;
     int n = 2;
     int f = round(((clk / target_freq) - n ) * 256);
     sm_config_set_clkdiv_int_frac(&c, n, f);
@@ -126,7 +126,7 @@ writezero:
 
 
 def time_to_cycles(time_us):
-    cycles_per_us = 8
+    cycles_per_us = 57.5
     cycles = round(float(time_us) * cycles_per_us)
     return cycles
 
