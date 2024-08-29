@@ -17,6 +17,10 @@
 #include <WiFiUdp.h>
 #endif
 
+#ifdef USE_RP2040
+#include <WiFiUdp.h>
+#endif
+
 namespace esphome {
 namespace wled {
 
