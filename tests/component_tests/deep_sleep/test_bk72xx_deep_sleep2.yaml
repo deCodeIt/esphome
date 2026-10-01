@@ -1,0 +1,15 @@
+---
+esphome:
+  name: test_bk72xx_deep_sleep2
+
+bk72xx:
+  board: cb2s
+
+substitutions:
+  devicename: test_bk72xx_deep_sleep2
+
+deep_sleep:
+  run_duration: 10s
+  wakeup_pin:
+    - pin: GPIO6
+      wakeup_pin_mode: KEEP_AWAKE

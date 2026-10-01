@@ -19,9 +19,9 @@
 namespace esphome {
 namespace deep_sleep {
 
-#ifdef USE_ESP32
+#if defined(USE_ESP32) || defined(USE_BK72XX)
 
-/** The values of this enum define what should be done if deep sleep is set up with a wakeup pin on the ESP32
+/** The values of this enum define what should be done if deep sleep is set up with a wakeup pin
  * and the scenario occurs that the wakeup pin is already in the wakeup state.
  */
 enum WakeupPinMode {
@@ -50,6 +50,12 @@ struct WakeupCauseToRunDuration {
   uint32_t gpio_cause;
 };
 
+/// Structure to hold a wakeup pin configuration with its mode
+struct WakeupPinItem {
+  InternalGPIOPin *wakeup_pin;  ///< Pointer to the GPIO pin for wakeup
+  WakeupPinMode wakeup_pin_mode;  ///< Wakeup behavior mode for this pin
+};
+
 #endif
 
 template<typename... Ts> class EnterDeepSleepAction;
@@ -66,13 +72,14 @@ class DeepSleepComponent : public Component {
  public:
   /// Set the duration in ms the component should sleep once it's in deep sleep mode.
   void set_sleep_duration(uint32_t time_ms);
-#if defined(USE_ESP32)
-  /** Set the pin to wake up to on the ESP32 once it's in deep sleep mode.
-   * Use the inverted property to set the wakeup level.
+#if defined(USE_ESP32) || defined(USE_BK72XX)
+  /** Add a GPIO pin to wake up from deep sleep mode.
+   *
+   * @param pin The WakeupPinItem containing the GPIO pin and its wakeup mode.
+   *            Use the pin's inverted property to set the wakeup level.
+   *            Multiple pins can be configured for devices that support it.
    */
-  void set_wakeup_pin(InternalGPIOPin *pin) { this->wakeup_pin_ = pin; }
-
-  void set_wakeup_pin_mode(WakeupPinMode wakeup_pin_mode);
+  void add_wakeup_pin(const WakeupPinItem pin) { this->wakeup_pins_.push_back(pin); }
 #endif
 
 #if defined(USE_ESP32)
@@ -113,10 +120,11 @@ class DeepSleepComponent : public Component {
   void deep_sleep_();
 
   optional<uint64_t> sleep_duration_;
+#if defined(USE_ESP32) || defined(USE_BK72XX)
+  std::vector<WakeupPinItem> wakeup_pins_;
+  bool prepare_pin_(esphome::InternalGPIOPin *pin, WakeupPinMode pin_mode);
+#endif
 #ifdef USE_ESP32
-  InternalGPIOPin *wakeup_pin_;
-  WakeupPinMode wakeup_pin_mode_{WAKEUP_PIN_MODE_IGNORE};
-
 #if !defined(USE_ESP32_VARIANT_ESP32C3)
   optional<Ext1Wakeup> ext1_wakeup_;
 #endif
